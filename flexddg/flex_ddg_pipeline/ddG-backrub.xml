@@ -1,0 +1,54 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        <ScoreFunction name="fa_at_2015" weights="ref2015"/>
+    </SCOREFXNS>
+    
+    <TASKOPERATIONS>
+        <ReadResfile name="resfile" filename="%%mutate_resfile_relpath%%"/>
+        <InitializeFromCommandline name="init"/>
+        <IncludeCurrent name="current"/>
+    </TASKOPERATIONS>
+    
+    <RESIDUE_SELECTORS>
+        <Chain name="move_chains" chains="%%chainstomove%%"/>
+    </RESIDUE_SELECTORS>
+    
+    <MOVERS>
+        # Save the starting pose (WT) for ddG calculation
+        <SavePoseMover name="save_wt" reference_name="wt_pose" restore_pose="0"/>
+
+        # Apply Mutation and Repack
+        <PackRotamersMover name="mutate_and_repack" scorefxn="fa_at_2015" task_operations="resfile,init,current"/>
+        
+        # Minimization
+        <MinMover name="minimize" scorefxn="fa_at_2015" chi="1" bb="1" jump="0" type="lbfgs_armijo_nonmonotone" tolerance="0.001" max_iter="%%max_minimization_iter%%">
+             <MoveMap name="mm" bb="1" chi="1" jump="0">
+                <ResidueSelector selector="move_chains" chi="1" bb="1"/>
+             </MoveMap>
+        </MinMover>
+        
+        # Backrub
+        <Backrub name="backrub" require_mm_bend="1"/>
+        
+        # Monte Carlo wrapper for Backrub
+        <GenericMonteCarlo name="backrub_mc" mover_name="backrub" scorefxn_name="fa_at_2015" trials="%%number_backrub_trials%%" temperature="1.2" preapply="0"/>
+
+        # Interface analysis (binding metric)
+        <InterfaceAnalyzerMover name="analyze_interface" scorefxn="fa_at_2015" interface="%%interface_partners%%" packstat="0" pack_input="0" pack_separated="1" tracer="0"/>
+
+        # Interface ddG calculation
+        <InterfaceDdGMover name="calc_ddg" scorefxn="fa_at_2015" chain_name="%%chainstomove%%" wt_ref_savepose_mover="save_wt"/>
+    </MOVERS>
+    
+    <PROTOCOLS>
+        <Add mover="save_wt"/>
+        <Add mover="mutate_and_repack"/>
+        <Add mover="minimize"/>
+        <Add mover="backrub_mc"/>
+        <Add mover="mutate_and_repack"/>
+        <Add mover="minimize"/>
+        <Add mover="analyze_interface"/>
+        <Add mover="calc_ddg"/>
+    </PROTOCOLS>
+</ROSETTASCRIPTS>
+

@@ -1,0 +1,20 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        <ScoreFunction name="ref15_cart" weights="ref2015_cart">
+            <Reweight scoretype="coordinate_constraint" weight="1.0"/>
+            <Reweight scoretype="cart_bonded" weight="0.5"/>
+            <Reweight scoretype="pro_close" weight="0.0"/>
+        </ScoreFunction>
+    </SCOREFXNS>
+    <TASKOPERATIONS>
+        <ReadResfile name="rrf" filename="%%resfile%%"/>
+        <InitializeFromCommandline name="init"/>
+        <IncludeCurrent name="current"/>
+    </TASKOPERATIONS>
+    <MOVERS>
+        <FastRelax name="relax" scorefxn="ref15_cart" task_operations="rrf,init,current" cartesian="1" bondangle="1" disable_design="false"/>
+    </MOVERS>
+    <PROTOCOLS>
+        <Add mover="relax"/>
+    </PROTOCOLS>
+</ROSETTASCRIPTS>

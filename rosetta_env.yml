@@ -1,0 +1,10 @@
+name: rosetta-vp1-flexddg
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.10,<3.12
+  - biopython>=1.81
+  - pandas>=2.0
+  - openpyxl>=3.1
+  - mafft>=7.5
